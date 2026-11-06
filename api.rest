@@ -1,0 +1,57 @@
+### Product Inventory API - sample requests
+### Works with the "REST Client" extension for VS Code (click "Send Request").
+
+@baseUrl = http://localhost:8080
+@json = application/json
+
+### Health check (verifies database connectivity)
+GET {{baseUrl}}/healthz
+
+### Create a product (201). Repeat it to get 409 Conflict.
+POST {{baseUrl}}/api/v1/products
+Content-Type: {{json}}
+
+{
+  "name": "Laptop Pro 15",
+  "sku": "LAP-100",
+  "description": "15 inch laptop",
+  "price": 1299.99,
+  "stock_quantity": 10,
+  "status": "active"
+}
+
+### Validation error (400)
+POST {{baseUrl}}/api/v1/products
+Content-Type: {{json}}
+
+{ "name": "", "sku": "bad sku", "price": -5, "status": "unknown" }
+
+### List products with pagination (200)
+GET {{baseUrl}}/api/v1/products?page=1&page_size=5
+
+### Filter by status
+GET {{baseUrl}}/api/v1/products?status=active
+
+### Search by name (case-insensitive, partial)
+GET {{baseUrl}}/api/v1/products?q=laptop
+
+### Low stock products (stock_quantity <= 5)
+GET {{baseUrl}}/api/v1/products?low_stock=true
+
+### Get one product (200, or 404 if it does not exist, 400 if the id is invalid)
+GET {{baseUrl}}/api/v1/products/1
+
+### Partial update (200)
+PATCH {{baseUrl}}/api/v1/products/1
+Content-Type: {{json}}
+
+{ "price": 1199.00, "stock_quantity": 8 }
+
+### Update with PUT (same behaviour as PATCH: only the given fields change)
+PUT {{baseUrl}}/api/v1/products/1
+Content-Type: {{json}}
+
+{ "status": "archived" }
+
+### Delete a product (204 No Content)
+DELETE {{baseUrl}}/api/v1/products/1
