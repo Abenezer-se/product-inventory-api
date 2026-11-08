@@ -2,12 +2,10 @@ package server
 
 import (
 	"context"
-	"mime"
 	"net/http"
 	"time"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"product-inventory-api/internal/apierror"
@@ -22,12 +20,7 @@ func NewRouter(pool *pgxpool.Pool) http.Handler {
 	productHandler := products.NewHandler(productService)
 
 	r := chi.NewRouter()
-	r.Use(middleware.RequestID)
-	r.Use(middleware.RealIP)
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
-	r.Use(middleware.Timeout(30 * time.Second))
-	r.Use(requireJSON)
+	useMiddleware(r, requestTimeout)
 
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		apierror.NotFound(w, "route not found")
@@ -46,22 +39,6 @@ func NewRouter(pool *pgxpool.Pool) http.Handler {
 	})
 
 	return r
-}
-
-// requireJSON rejects write requests that are not application/json.
-func requireJSON(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodPost, http.MethodPut, http.MethodPatch:
-			mediaType, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
-			if err != nil || mediaType != "application/json" {
-				apierror.Write(w, http.StatusUnsupportedMediaType, "unsupported_media_type",
-					"Content-Type must be application/json", nil)
-				return
-			}
-		}
-		next.ServeHTTP(w, r)
-	})
 }
 
 // healthHandler reports whether the API can reach the database.
