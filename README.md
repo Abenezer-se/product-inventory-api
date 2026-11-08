@@ -1,4 +1,4 @@
-﻿# Product Inventory API
+# Product Inventory API
 
 This is my solution for the Product Inventory challenge. It is a REST API for managing products (create, list, read, update, and delete). I built it using Go, the Chi router, sqlc, PostgreSQL, and Docker.
 
@@ -243,6 +243,7 @@ Example:
 | `conflict` | 409 | Product SKU already exists |
 | `unsupported_media_type` | 415 | Content-Type is not `application/json` |
 | `internal_error` | 500 | Unexpected server error |
+| `timeout` | 504 | The request took longer than 30 seconds |
 
 The API also handles PostgreSQL duplicate-key errors (23505) and returns a 409 Conflict response.
 
